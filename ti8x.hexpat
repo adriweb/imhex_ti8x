@@ -5,6 +5,9 @@
   https://github.com/adriweb/imhex_ti8x/
 */
 
+#include <std/mem.pat>
+#include <std/sys.pat>
+
 enum VarTypeID : u8 {
     Real = 0x00,
     RealList = 0x01,
@@ -23,12 +26,13 @@ enum VarTypeID : u8 {
     TableRange = 0x11,
     ScreenImage = 0x12,
     Backup = 0x13,
+    App = 0x14,
     AppVar = 0x15,
     PythonAppVar = 0x15,
     TemporaryItem = 0x16,
     GroupObject = 0x17,
     RealFraction = 0x18,
-    DirectoryList = 0x19,
+    MixedFraction = 0x19,
     Image = 0x1A,
 
     ExactComplexFrac = 0x1B,
@@ -49,6 +53,7 @@ enum VarTypeID : u8 {
 };
 
 enum OwnerPID : u8 {
+	None    = 0x00,
 	pid83p  = 0x04,
 	pid84p  = 0x0A,
 	pid82a  = 0x0B,
@@ -87,8 +92,11 @@ struct VarEntry
 
 struct Variable {
    VarHeader header;
-   VarEntry entry[1]; // todo: support multiple var entries
-   u16 checksum;
+   VarEntry entries[while($ < std::mem::size()-2)];
+   u16 checksum @ (std::mem::size()-2);
 };
 
 Variable var @ 0;
+
+std::assert_warn(var.header.entries_len == sizeof(var.entries), "bad entries len expected vs actual");
+
